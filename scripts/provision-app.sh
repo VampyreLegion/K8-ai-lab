@@ -108,6 +108,9 @@ provision:
     SUBDOMAIN:
       value: ""
       description: "Your subdomain on nyxstudios.net — e.g. 'myapp' makes https://myapp.nyxstudios.net"
+    K8S_NAMESPACE:
+      value: "default"
+      description: "Kubernetes namespace to deploy into — use 'default' or create a new one (e.g. 'my-project')"
   before_script:
     - apk add --no-cache sshpass curl python3 openssh-client
   script:
@@ -117,7 +120,12 @@ provision:
       HOSTNAME_FQDN="${SUBDOMAIN}.${DOMAIN}"
       SSH_OPTS="-o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no"
 
-      echo "Provisioning ${APP_NAME} at https://${HOSTNAME_FQDN} ..."
+      echo "Provisioning ${APP_NAME} at https://${HOSTNAME_FQDN} (namespace: ${K8S_NAMESPACE}) ..."
+
+      # ── K8s namespace (create if not default) ─────────────────────────────
+      sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} "
+        kubectl get namespace ${K8S_NAMESPACE} 2>/dev/null || kubectl create namespace ${K8S_NAMESPACE}
+      "
 
       # ── K8s deployment on Selene ───────────────────────────────────────────
       python3 -c "
@@ -125,7 +133,7 @@ provision:
 kind: Deployment
 metadata:
   name: ${APP_NAME}
-  namespace: default
+  namespace: ${K8S_NAMESPACE}
 spec:
   replicas: 1
   selector:
@@ -146,11 +154,11 @@ spec:
       sshpass -p "$SSH_PASS" scp $SSH_OPTS /tmp/k8s-deploy.yaml ${SSH_USER}@${K8S_HOST}:/tmp/k8s-deploy-${APP_NAME}.yaml
       sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} "
         kubectl apply -f /tmp/k8s-deploy-${APP_NAME}.yaml
-        kubectl expose deployment ${APP_NAME} --port=80 --target-port=80 --type=NodePort -n default 2>/dev/null || true
-        kubectl rollout status deployment/${APP_NAME} -n default --timeout=60s
+        kubectl expose deployment ${APP_NAME} --port=80 --target-port=80 --type=NodePort -n ${K8S_NAMESPACE} 2>/dev/null || true
+        kubectl rollout status deployment/${APP_NAME} -n ${K8S_NAMESPACE} --timeout=60s
       "
       NODE_PORT=$(sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} \
-        "kubectl get svc ${APP_NAME} -n default -o jsonpath='{.spec.ports[0].nodePort}'")
+        "kubectl get svc ${APP_NAME} -n ${K8S_NAMESPACE} -o jsonpath='{.spec.ports[0].nodePort}'")
       echo "NodePort: ${NODE_PORT}"
 
       # ── Apache VirtualHost on Astraea ──────────────────────────────────────
@@ -206,8 +214,20 @@ spec:
           -d "{\"name\":\"Allow users\",\"decision\":\"allow\",\"precedence\":1,\"include\":[{\"email\":{\"email\":\"${ADMIN_EMAIL}\"}}]}" > /dev/null
       fi
 
+      # ── Save namespace as a project CI variable for the deploy job ────────
+      curl -s -X POST "${GITLAB_URL}/api/v4/projects/${CI_PROJECT_ID}/variables" \
+        -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"key\":\"K8S_NAMESPACE\",\"value\":\"${K8S_NAMESPACE}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
+        -o /dev/null || \
+      curl -s -X PUT "${GITLAB_URL}/api/v4/projects/${CI_PROJECT_ID}/variables/K8S_NAMESPACE" \
+        -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"key\":\"K8S_NAMESPACE\",\"value\":\"${K8S_NAMESPACE}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
+        -o /dev/null
+
       echo ""
-      echo "✔ Infrastructure ready!"
+      echo "✔ Infrastructure ready! Namespace: ${K8S_NAMESPACE}"
       echo "✔ https://${HOSTNAME_FQDN}"
       echo ""
       echo "Now click ▶ deploy to go live."
@@ -223,11 +243,13 @@ deploy:
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
+  variables:
+    K8S_NAMESPACE: "default"   # overwritten by the project variable saved during provision
   script:
     - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
     - export KUBECONFIG=/tmp/kubeconfig
-    - kubectl set image deployment/$CI_PROJECT_NAME $CI_PROJECT_NAME=$IMAGE_TAG -n default
-    - kubectl rollout status deployment/$CI_PROJECT_NAME -n default --timeout=120s
+    - kubectl set image deployment/$CI_PROJECT_NAME $CI_PROJECT_NAME=$IMAGE_TAG -n $K8S_NAMESPACE
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n $K8S_NAMESPACE --timeout=120s
   only:
     - main
 YAML_EOF
@@ -324,6 +346,8 @@ set_var "ADMIN_EMAIL"   "${ADMIN_EMAIL}"
 set_var "DOMAIN"        "${DOMAIN}"
 set_var "REGISTRY"      "${REGISTRY}"
 set_var "NAMESPACE"     "${NAMESPACE}"
+set_var "GITLAB_URL"    "${GITLAB_URL}"
+set_var "GITLAB_TOKEN"  "${GITLAB_TOKEN}"  "True"
 
 ok "CI variables set"
 
