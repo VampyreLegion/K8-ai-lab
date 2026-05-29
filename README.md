@@ -164,16 +164,6 @@ All public sites require **Google authentication via Cloudflare Access**.
 | **demo-app** | https://app.nyxstudios.net | Demo nginx app on K8s |
 | **Space Invaders** | https://invaders.nyxstudios.net | HTML5 game on K8s |
 
-### Other Nyx Studios Services
-
-| Site | URL | What it is |
-|------|-----|------------|
-| ComfyUI | https://ai.nyxstudios.net | AI image generation |
-| ACE-Step | https://ai2.nyxstudios.net | Music generation |
-| Open WebUI | https://nyx.nyxstudios.net | LLM chat interface |
-| Navidrome | https://music.nyxstudios.net | Music streaming |
-| Immich | https://selene.nyxstudios.net | Photo library |
-
 ### LAN Direct Access (no Cloudflare Auth needed)
 
 | What | Address |
