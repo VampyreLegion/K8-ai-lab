@@ -105,12 +105,8 @@ provision:
     - docker-nyx
   image: alpine:3.19
   variables:
-    SUBDOMAIN:
-      value: ""
-      description: "Your subdomain on nyxstudios.net — e.g. 'myapp' makes https://myapp.nyxstudios.net"
-    K8S_NAMESPACE:
-      value: "default"
-      description: "Kubernetes namespace to deploy into — use 'default' or create a new one (e.g. 'my-project')"
+    SUBDOMAIN: ""
+    K8S_NAMESPACE: "default"
   before_script:
     - apk add --no-cache sshpass curl python3 openssh-client
   script:
@@ -128,28 +124,28 @@ provision:
       "
 
       # ── K8s deployment on Selene ───────────────────────────────────────────
-      python3 -c "
-      print('''apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ${APP_NAME}
-  namespace: ${K8S_NAMESPACE}
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ${APP_NAME}
-  template:
-    metadata:
-      labels:
-        app: ${APP_NAME}
-    spec:
-      containers:
-      - name: ${APP_NAME}
-        image: nginx:alpine
-        ports:
-        - containerPort: 80''')
-      " > /tmp/k8s-deploy.yaml
+      cat > /tmp/k8s-deploy.yaml << MANIFEST
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${APP_NAME}
+        namespace: ${K8S_NAMESPACE}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${APP_NAME}
+        template:
+          metadata:
+            labels:
+              app: ${APP_NAME}
+          spec:
+            containers:
+            - name: ${APP_NAME}
+              image: nginx:alpine
+              ports:
+              - containerPort: 80
+      MANIFEST
 
       sshpass -p "$SSH_PASS" scp $SSH_OPTS /tmp/k8s-deploy.yaml ${SSH_USER}@${K8S_HOST}:/tmp/k8s-deploy-${APP_NAME}.yaml
       sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} "
@@ -162,14 +158,14 @@ spec:
       echo "NodePort: ${NODE_PORT}"
 
       # ── Apache VirtualHost on Astraea ──────────────────────────────────────
-      python3 -c "
-      print('''<VirtualHost *:80>
-    ServerName ${HOSTNAME_FQDN}
-    ProxyPreserveHost On
-    ProxyPass / http://${K8S_HOST}:${NODE_PORT}/
-    ProxyPassReverse / http://${K8S_HOST}:${NODE_PORT}/
-</VirtualHost>''')
-      " > /tmp/vhost-${APP_NAME}.conf
+      cat > /tmp/vhost-${APP_NAME}.conf << VHOST
+      <VirtualHost *:80>
+          ServerName ${HOSTNAME_FQDN}
+          ProxyPreserveHost On
+          ProxyPass / http://${K8S_HOST}:${NODE_PORT}/
+          ProxyPassReverse / http://${K8S_HOST}:${NODE_PORT}/
+      </VirtualHost>
+      VHOST
 
       sshpass -p "$SSH_PASS" scp $SSH_OPTS /tmp/vhost-${APP_NAME}.conf ${SSH_USER}@${ASTRAEA_HOST}:/tmp/${APP_NAME}.conf
       sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${ASTRAEA_HOST} "
@@ -291,10 +287,14 @@ print(json.dumps({
     -d @"${PAYLOAD_FILE}" > /dev/null
 fi
 
-# Unprotect main so developers can push directly
-curl -s -o /dev/null -X DELETE \
-  -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-  "${GITLAB_URL}/api/v4/projects/${PROJECT_ID}/protected_branches/main" || true
+# Unprotect main so developers can push directly (retry — GitLab may auto-protect on branch creation)
+for i in 1 2 3; do
+  sleep 2
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+    -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+    "${GITLAB_URL}/api/v4/projects/${PROJECT_ID}/protected_branches/main")
+  [[ "${STATUS}" == "204" || "${STATUS}" == "404" ]] && break
+done
 
 ok "CI pipeline committed"
 
@@ -302,7 +302,7 @@ ok "CI pipeline committed"
 step "3/4 — Setting CI variables"
 
 set_var() {
-  local key="$1" value="$2" masked="${3:-false}"
+  local key="$1" value="$2" masked="${3:-False}"
   local payload
   payload=$(python3 -c "import json; print(json.dumps({'key':'${key}','value':'''${value}''','variable_type':'env_var','protected':False,'masked':${masked}}))")
   local http

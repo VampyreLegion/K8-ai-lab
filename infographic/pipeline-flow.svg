@@ -351,9 +351,9 @@
   <text x="375" y="920" font-size="11" fill="#8b949e">URL:</text>
   <text x="410" y="920" font-size="11" fill="#e6edf3">https://gitlab.nyxstudios.net</text>
   <text x="375" y="938" font-size="11" fill="#8b949e">User:</text>
-  <text x="410" y="938" font-size="12" fill="#3fb950" font-weight="700">legion</text>
+  <text x="410" y="938" font-size="12" fill="#3fb950" font-weight="700">user</text>
   <text x="375" y="956" font-size="11" fill="#8b949e">Pass:</text>
-  <text x="410" y="956" font-size="12" fill="#3fb950" font-weight="700">Zaq12345zaq1</text>
+  <text x="410" y="956" font-size="12" fill="#3fb950" font-weight="700">pw</text>
   <text x="375" y="978" font-size="11" fill="#8b949e">Projects:</text>
   <text x="375" y="992" font-size="11" fill="#e6edf3">  root/demo-app  (auto deploy)</text>
   <text x="375" y="1006" font-size="11" fill="#e6edf3">  root/space-invaders  (manual)</text>
@@ -370,11 +370,11 @@
   <rect x="680" y="894" width="290" height="10" fill="#0d2010"/>
   <text x="825" y="894" text-anchor="middle" font-size="12" font-weight="700" fill="#56d364">🖥️  SSH &amp; KUBECTL</text>
   <text x="700" y="918" font-size="11" fill="#8b949e">Selene (K8s):</text>
-  <text x="700" y="931" font-size="11" fill="#79c0ff">ssh legion@192.168.1.25</text>
+  <text x="700" y="931" font-size="11" fill="#79c0ff">ssh user@192.168.1.25</text>
   <text x="700" y="944" font-size="11" fill="#8b949e">Astraea (gateway):</text>
-  <text x="700" y="957" font-size="11" fill="#79c0ff">ssh legion@192.168.1.109</text>
+  <text x="700" y="957" font-size="11" fill="#79c0ff">ssh user@192.168.1.109</text>
   <text x="700" y="970" font-size="11" fill="#8b949e">Password (all): </text>
-  <text x="800" y="970" font-size="11" fill="#3fb950" font-weight="700">Zaq12345zaq1</text>
+  <text x="800" y="970" font-size="11" fill="#3fb950" font-weight="700">pw</text>
   <text x="700" y="990" font-size="11" fill="#8b949e">Common kubectl cmds:</text>
   <text x="700" y="1004" font-size="11" fill="#79c0ff">kubectl get pods</text>
   <text x="700" y="1018" font-size="11" fill="#79c0ff">kubectl get svc</text>
