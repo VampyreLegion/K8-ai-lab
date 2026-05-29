@@ -191,15 +191,15 @@ All public sites require **Google sign-in with steve.j.petry@gmail.com** via Clo
 1. Go to **https://gitlab.nyxstudios.net**
 2. Cloudflare Access will ask you to sign in with Google — use `steve.j.petry@gmail.com`
 3. GitLab login:
-   - Username: `legion`
-   - Password: `Zaq12345zaq1`
+   - Username: `user`
+   - Password: `pw`
 
 ### Cloning a Project
 
 ```bash
 git clone https://gitlab.nyxstudios.net/root/demo-app.git
 cd demo-app
-# username: legion  password: Zaq12345zaq1
+# username: user  password: pw
 ```
 
 ### Making Changes and Deploying (demo-app — auto deploy)
@@ -248,7 +248,7 @@ Follow these steps to add a new app with full CI/CD to Kubernetes.
 
 ```bash
 # Via API (from Nyx terminal):
-curl -X POST -H "PRIVATE-TOKEN: glpat-uy-SNF8XAedjuMIpNVEqdW86MQp1OjEH.01.0w06j5xn2" \
+curl -X POST -H "PRIVATE-TOKEN: <your-gitlab-pat>" \
   http://192.168.1.236:8929/api/v4/projects \
   --form "name=my-new-app" \
   --form "visibility=public"
@@ -313,11 +313,11 @@ deploy:
 
 ```bash
 # Copy from existing project (replace PROJECT_ID with your new project's ID):
-KUBE=$(curl -s -H "PRIVATE-TOKEN: glpat-uy-SNF8XAedjuMIpNVEqdW86MQp1OjEH.01.0w06j5xn2" \
+KUBE=$(curl -s -H "PRIVATE-TOKEN: <your-gitlab-pat>" \
   http://192.168.1.236:8929/api/v4/projects/1/variables/KUBE_CONFIG \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['value'])")
 
-curl -X POST -H "PRIVATE-TOKEN: glpat-uy-SNF8XAedjuMIpNVEqdW86MQp1OjEH.01.0w06j5xn2" \
+curl -X POST -H "PRIVATE-TOKEN: <your-gitlab-pat>" \
   http://192.168.1.236:8929/api/v4/projects/PROJECT_ID/variables \
   --form "key=KUBE_CONFIG" --form "value=$KUBE"
 ```
@@ -325,7 +325,7 @@ curl -X POST -H "PRIVATE-TOKEN: glpat-uy-SNF8XAedjuMIpNVEqdW86MQp1OjEH.01.0w06j5
 ### Step 4 — Enable the runner on your project
 
 ```bash
-curl -X POST -H "PRIVATE-TOKEN: glpat-uy-SNF8XAedjuMIpNVEqdW86MQp1OjEH.01.0w06j5xn2" \
+curl -X POST -H "PRIVATE-TOKEN: <your-gitlab-pat>" \
   http://192.168.1.236:8929/api/v4/projects/PROJECT_ID/runners \
   --form "runner_id=1"
 ```
@@ -333,7 +333,7 @@ curl -X POST -H "PRIVATE-TOKEN: glpat-uy-SNF8XAedjuMIpNVEqdW86MQp1OjEH.01.0w06j5
 ### Step 5 — Create the Kubernetes deployment on Selene
 
 ```bash
-ssh legion@192.168.1.25   # password: Zaq12345zaq1
+ssh user@192.168.1.25   # password: pw
 
 kubectl create deployment my-new-app \
   --image=192.168.1.236:5050/root/my-new-app:latest -n default
@@ -347,7 +347,7 @@ kubectl get svc my-new-app   # note the NodePort (e.g. 32345)
 ### Step 6 — Add Apache VirtualHost on Astraea
 
 ```bash
-ssh legion@192.168.1.109   # password: Zaq12345zaq1
+ssh user@192.168.1.109   # password: pw
 
 sudo tee /etc/apache2/sites-available/my-new-app.conf << EOF
 <VirtualHost *:80>
@@ -386,16 +386,16 @@ You're already on Nyx — open a terminal.
 
 ### SSH to Astraea (the gateway)
 ```bash
-sshpass -p 'Zaq12345zaq1' ssh \
+sshpass -p 'pw' ssh \
   -o PreferredAuthentications=password \
   -o PubkeyAuthentication=no \
-  legion@192.168.1.109
+  user@192.168.1.109
 ```
 
 ### SSH to Selene (the K8s machine)
 ```bash
-ssh legion@192.168.1.25
-# password: Zaq12345zaq1
+ssh user@192.168.1.25
+# password: pw
 ```
 
 ### Kubernetes Commands (run on Selene)
@@ -518,7 +518,7 @@ curl -X POST -H "PRIVATE-TOKEN: glpat-..." \
 ### Image pull fails on Selene — HTTPS error
 containerd's config_path must be a single path (no colon-separated list):
 ```bash
-ssh legion@192.168.1.25
+ssh user@192.168.1.25
 grep config_path /etc/containerd/config.toml
 # Must be: config_path = '/etc/containerd/certs.d'
 # NOT:     config_path = '/etc/containerd/certs.d:/etc/docker/certs.d'
@@ -548,7 +548,7 @@ Only `selene` (192.168.1.25) should be in `/etc/hosts`.
 │                    K8 AI LAB QUICK REFERENCE                    │
 ├─────────────────────────────────────────────────────────────────┤
 │ GitLab          https://gitlab.nyxstudios.net                   │
-│                 user: legion  pw: Zaq12345zaq1                  │
+│                 user: user  pw: pw                  │
 ├─────────────────────────────────────────────────────────────────┤
 │ demo-app        https://app.nyxstudios.net                      │
 │                 Auto-deploys on every git push                   │
@@ -556,8 +556,8 @@ Only `selene` (192.168.1.25) should be in `/etc/hosts`.
 │ Space Invaders  https://invaders.nyxstudios.net                 │
 │                 Manual deploy (click ▶ in GitLab pipeline)       │
 ├─────────────────────────────────────────────────────────────────┤
-│ SSH Selene      ssh legion@192.168.1.25  pw: Zaq12345zaq1       │
-│ SSH Astraea     ssh legion@192.168.1.109  pw: Zaq12345zaq1      │
+│ SSH Selene      ssh user@192.168.1.25  pw: pw       │
+│ SSH Astraea     ssh user@192.168.1.109  pw: pw      │
 ├─────────────────────────────────────────────────────────────────┤
 │ K8s check       kubectl get pods                                 │
 │ K8s logs        kubectl logs -l app=<name> -f                   │
