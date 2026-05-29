@@ -1,12 +1,14 @@
 stages:
   - build
+  - provision
   - deploy
 
 variables:
   REGISTRY: "192.168.1.236:5050"
-  IMAGE_TAG: "$REGISTRY/root/demo-app:$CI_COMMIT_SHA"
-  LATEST_TAG: "$REGISTRY/root/demo-app:latest"
+  IMAGE_TAG: "$REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA"
+  LATEST_TAG: "$REGISTRY/$CI_PROJECT_PATH:latest"
 
+# ── Build: runs automatically on every push ────────────────────────────────────
 build:
   stage: build
   tags:
@@ -20,17 +22,154 @@ build:
   only:
     - main
 
+# ── Provision: run ONCE to set up infrastructure — asks for your subdomain ─────
+provision:
+  stage: provision
+  when: manual
+  tags:
+    - docker-nyx
+  image: alpine:3.19
+  variables:
+    SUBDOMAIN: ""
+    K8S_NAMESPACE: "default"
+  before_script:
+    - apk add --no-cache sshpass curl python3 openssh-client
+  script:
+    - |
+      set -e
+      APP_NAME="$CI_PROJECT_NAME"
+      HOSTNAME_FQDN="${SUBDOMAIN}.${DOMAIN}"
+      SSH_OPTS="-o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no"
+
+      echo "Provisioning ${APP_NAME} at https://${HOSTNAME_FQDN} (namespace: ${K8S_NAMESPACE}) ..."
+
+      # ── K8s namespace (create if not default) ─────────────────────────────
+      sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} "
+        kubectl get namespace ${K8S_NAMESPACE} 2>/dev/null || kubectl create namespace ${K8S_NAMESPACE}
+      "
+
+      # ── K8s deployment on Selene ───────────────────────────────────────────
+      cat > /tmp/k8s-deploy.yaml << MANIFEST
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ${APP_NAME}
+        namespace: ${K8S_NAMESPACE}
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: ${APP_NAME}
+        template:
+          metadata:
+            labels:
+              app: ${APP_NAME}
+          spec:
+            containers:
+            - name: ${APP_NAME}
+              image: nginx:alpine
+              ports:
+              - containerPort: 80
+      MANIFEST
+
+      sshpass -p "$SSH_PASS" scp $SSH_OPTS /tmp/k8s-deploy.yaml ${SSH_USER}@${K8S_HOST}:/tmp/k8s-deploy-${APP_NAME}.yaml
+      sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} "
+        kubectl apply -f /tmp/k8s-deploy-${APP_NAME}.yaml
+        kubectl expose deployment ${APP_NAME} --port=80 --target-port=80 --type=NodePort -n ${K8S_NAMESPACE} 2>/dev/null || true
+        kubectl rollout status deployment/${APP_NAME} -n ${K8S_NAMESPACE} --timeout=60s
+      "
+      NODE_PORT=$(sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${K8S_HOST} \
+        "kubectl get svc ${APP_NAME} -n ${K8S_NAMESPACE} -o jsonpath='{.spec.ports[0].nodePort}'")
+      echo "NodePort: ${NODE_PORT}"
+
+      # ── Apache VirtualHost on Astraea ──────────────────────────────────────
+      cat > /tmp/vhost-${APP_NAME}.conf << VHOST
+      <VirtualHost *:80>
+          ServerName ${HOSTNAME_FQDN}
+          ProxyPreserveHost On
+          ProxyPass / http://${K8S_HOST}:${NODE_PORT}/
+          ProxyPassReverse / http://${K8S_HOST}:${NODE_PORT}/
+      </VirtualHost>
+      VHOST
+
+      sshpass -p "$SSH_PASS" scp $SSH_OPTS /tmp/vhost-${APP_NAME}.conf ${SSH_USER}@${ASTRAEA_HOST}:/tmp/${APP_NAME}.conf
+      sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${ASTRAEA_HOST} "
+        echo '${SSH_PASS}' | sudo -S cp /tmp/${APP_NAME}.conf /etc/apache2/sites-available/${APP_NAME}.conf
+        echo '${SSH_PASS}' | sudo -S a2ensite ${APP_NAME}.conf
+        echo '${SSH_PASS}' | sudo -S systemctl reload apache2
+      "
+
+      # ── Cloudflare DNS CNAME ───────────────────────────────────────────────
+      curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records" \
+        -H "X-Auth-Email: ${CF_EMAIL}" \
+        -H "X-Auth-Key: ${CF_API_KEY}" \
+        -H "Content-Type: application/json" \
+        -d "{\"type\":\"CNAME\",\"name\":\"${SUBDOMAIN}\",\"content\":\"${CF_TUNNEL_ID}.cfargotunnel.com\",\"proxied\":true,\"ttl\":1}" \
+        | python3 -c "import sys,json; d=json.load(sys.stdin); print('DNS:', 'created' if d.get('success') else d.get('errors',''))"
+
+      # ── Cloudflare tunnel route on Astraea ─────────────────────────────────
+      sshpass -p "$SSH_PASS" ssh $SSH_OPTS ${SSH_USER}@${ASTRAEA_HOST} "
+        if ! grep -q 'hostname: ${HOSTNAME_FQDN}' /etc/cloudflared/config.yml; then
+          echo '${SSH_PASS}' | sudo -S sed -i \
+            '/http_status:404/i\\  - hostname: ${HOSTNAME_FQDN}\\n    service: http://localhost:80' \
+            /etc/cloudflared/config.yml
+        fi
+        echo '${SSH_PASS}' | sudo -S systemctl restart cloudflared
+      "
+
+      # ── Cloudflare Access app + policy ─────────────────────────────────────
+      ACCESS_APP_ID=$(curl -s -X POST \
+        "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/access/apps" \
+        -H "X-Auth-Email: ${CF_EMAIL}" \
+        -H "X-Auth-Key: ${CF_API_KEY}" \
+        -H "Content-Type: application/json" \
+        -d "{\"name\":\"${APP_NAME}\",\"domain\":\"${HOSTNAME_FQDN}\",\"type\":\"self_hosted\",\"session_duration\":\"24h\",\"allowed_idps\":[\"${CF_IDP_ID}\"],\"auto_redirect_to_identity\":true}" \
+        | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['result']['id'] if d.get('success') else '')" || echo "")
+
+      if [[ -n "${ACCESS_APP_ID}" ]]; then
+        curl -sf -X POST \
+          "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/access/apps/${ACCESS_APP_ID}/policies" \
+          -H "X-Auth-Email: ${CF_EMAIL}" \
+          -H "X-Auth-Key: ${CF_API_KEY}" \
+          -H "Content-Type: application/json" \
+          -d "{\"name\":\"Allow users\",\"decision\":\"allow\",\"precedence\":1,\"include\":[{\"email\":{\"email\":\"${ADMIN_EMAIL}\"}}]}" > /dev/null
+      fi
+
+      # ── Save namespace as a project CI variable for the deploy job ────────
+      curl -s -X POST "${GITLAB_URL}/api/v4/projects/${CI_PROJECT_ID}/variables" \
+        -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"key\":\"K8S_NAMESPACE\",\"value\":\"${K8S_NAMESPACE}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
+        -o /dev/null || \
+      curl -s -X PUT "${GITLAB_URL}/api/v4/projects/${CI_PROJECT_ID}/variables/K8S_NAMESPACE" \
+        -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"key\":\"K8S_NAMESPACE\",\"value\":\"${K8S_NAMESPACE}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
+        -o /dev/null
+
+      echo ""
+      echo "✔ Infrastructure ready! Namespace: ${K8S_NAMESPACE}"
+      echo "✔ https://${HOSTNAME_FQDN}"
+      echo ""
+      echo "Now click ▶ deploy to go live."
+  only:
+    - main
+
+# ── Deploy: push your image to K8s ────────────────────────────────────────────
 deploy:
   stage: deploy
+  when: manual
   tags:
     - docker-nyx
   image:
     name: bitnami/kubectl:latest
     entrypoint: [""]
+  variables:
+    K8S_NAMESPACE: "default"   # overwritten by the project variable saved during provision
   script:
     - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
     - export KUBECONFIG=/tmp/kubeconfig
-    - kubectl set image deployment/demo-app demo-app=$IMAGE_TAG -n default
-    - kubectl rollout status deployment/demo-app -n default --timeout=120s
+    - kubectl set image deployment/$CI_PROJECT_NAME $CI_PROJECT_NAME=$IMAGE_TAG -n $K8S_NAMESPACE
+    - kubectl rollout status deployment/$CI_PROJECT_NAME -n $K8S_NAMESPACE --timeout=120s
   only:
     - main
