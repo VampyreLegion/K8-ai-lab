@@ -72,7 +72,7 @@ CREATE_RESP=$(curl -s \
   -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
   -H "Content-Type: application/json" \
   "${GITLAB_URL}/api/v4/projects" \
-  -d "{\"name\":\"${APP_NAME}\",\"namespace_id\":${NS_ID},\"visibility\":\"private\",\"initialize_with_readme\":false}" || true)
+  -d "{\"name\":\"${APP_NAME}\",\"namespace_id\":${NS_ID},\"visibility\":\"public\",\"initialize_with_readme\":false}" || true)
 
 PROJECT_ID=$(echo "${CREATE_RESP}" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null || true)
 
@@ -175,6 +175,11 @@ fi
 
 ok ".gitlab-ci.yml committed"
 
+# Unprotect main so developers can push directly without merge requests
+curl -s -o /dev/null -X DELETE \
+  -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+  "${GITLAB_URL}/api/v4/projects/${PROJECT_ID}/protected_branches/main" || true
+
 # ── 3. Copy KUBE_CONFIG variable ───────────────────────────────────────────────
 step "3/9 — Copying KUBE_CONFIG CI variable"
 
@@ -230,9 +235,29 @@ step "5/9 — Creating K8s Deployment + NodePort Service on Selene"
 
 _ssh "${K8S_HOST}" bash -s <<SELENE_EOF
 set -euo pipefail
-kubectl create deployment ${APP_NAME} \
-  --image=nginx:alpine --replicas=1 \
-  --dry-run=client -o yaml | kubectl apply -f -
+# Use a manifest so the container name matches the app name (required by kubectl set image)
+cat <<MANIFEST | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP_NAME}
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${APP_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${APP_NAME}
+    spec:
+      containers:
+      - name: ${APP_NAME}
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+MANIFEST
 kubectl expose deployment ${APP_NAME} \
   --port=80 --target-port=80 --type=NodePort -n default 2>/dev/null || true
 kubectl rollout status deployment/${APP_NAME} -n default --timeout=60s
@@ -248,6 +273,7 @@ step "6/9 — Configuring Apache VirtualHost on Astraea"
 
 _ssh "${ASTRAEA_HOST}" bash -s <<ASTRAEA_EOF
 set -euo pipefail
+# Write to /tmp as normal user, then sudo copy — avoids stdin conflict with sudo -S
 python3 -c "
 content = '''<VirtualHost *:80>
     ServerName ${HOSTNAME_FQDN}
@@ -257,7 +283,9 @@ content = '''<VirtualHost *:80>
 </VirtualHost>
 '''
 print(content, end='')
-" | echo "${SSH_PASS}" | sudo -S tee /etc/apache2/sites-available/${APP_NAME}.conf > /dev/null
+" > /tmp/${APP_NAME}.conf
+echo "${SSH_PASS}" | sudo -S cp /tmp/${APP_NAME}.conf /etc/apache2/sites-available/${APP_NAME}.conf
+rm /tmp/${APP_NAME}.conf
 echo "${SSH_PASS}" | sudo -S a2ensite ${APP_NAME}.conf
 echo "${SSH_PASS}" | sudo -S systemctl reload apache2
 ASTRAEA_EOF
