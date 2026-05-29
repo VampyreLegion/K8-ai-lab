@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # provision-app.sh — Fully automated GitLab + K8s + Cloudflare app onboarding
-# Usage: ./provision-app.sh <app-name> [google-email]
+# Usage: ./provision-app.sh <app-name> [subdomain] [google-email]
+#
+#   app-name   — GitLab project name (letters, numbers, hyphens)
+#   subdomain  — subdomain on nyxstudios.net (defaults to app-name)
+#   google-email — extra Google account to allow through Cloudflare Access
+#
+# Examples:
+#   ./provision-app.sh hello-world
+#   ./provision-app.sh hello-world mysite
+#   ./provision-app.sh hello-world mysite user@gmail.com
 #
 # Requires: scripts/provision.env (copy from provision.env.example and fill in)
 set -euo pipefail
@@ -12,11 +21,21 @@ step() { echo -e "\n${BOLD}▶ $*${RESET}"; }
 
 # ── Args ───────────────────────────────────────────────────────────────────────
 if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 <app-name> [google-email]"
+  echo "Usage: $0 <app-name> [subdomain] [google-email]"
+  echo ""
+  echo "  app-name    GitLab project name (e.g. hello-world)"
+  echo "  subdomain   Subdomain on nyxstudios.net (defaults to app-name)"
+  echo "  google-email  Extra Google account for Cloudflare Access"
+  echo ""
+  echo "Examples:"
+  echo "  $0 hello-world"
+  echo "  $0 hello-world mysite"
+  echo "  $0 hello-world mysite user@gmail.com"
   exit 1
 fi
 APP_NAME="$1"
-EXTRA_EMAIL="${2:-}"
+SUBDOMAIN_ARG="${2:-}"
+EXTRA_EMAIL="${3:-}"
 
 # ── Load config ────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,7 +50,9 @@ fi
 # shellcheck source=provision.env.example
 source "${ENV_FILE}"
 
-HOSTNAME_FQDN="${APP_NAME}.${DOMAIN}"
+# Subdomain defaults to app-name if not specified
+SUBDOMAIN="${SUBDOMAIN_ARG:-${APP_NAME}}"
+HOSTNAME_FQDN="${SUBDOMAIN}.${DOMAIN}"
 
 _ssh() { sshpass -p "${SSH_PASS}" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -o StrictHostKeyChecking=no "${SSH_USER}@$1" "${@:2}"; }
 
