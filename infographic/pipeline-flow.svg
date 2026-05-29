@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1320" width="1000" height="1320" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#161b22;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="nyx" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f6feb;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#388bfd;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="astraea" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f78166;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#ff7b72;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="selene" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3fb950;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#56d364;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="cf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f6821f;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#fbad41;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="user" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b949e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#b1bac4;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f78166"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3fb950"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="1320" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="500" y="48" text-anchor="middle" font-size="28" font-weight="700" fill="#e6edf3" letter-spacing="1">K8 AI LAB — DEVOPS PIPELINE</text>
+  <text x="500" y="72" text-anchor="middle" font-size="14" fill="#8b949e">Nyx Studios Self-Hosted CI/CD · GitLab → Kubernetes → Cloudflare</text>
+  <line x1="60" y1="86" x2="940" y2="86" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1: DEV WORKFLOW (top) -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="500" y="114" text-anchor="middle" font-size="13" font-weight="600" fill="#8b949e" letter-spacing="2">● DEVELOPER WORKFLOW ●</text>
+
+  <!-- Step boxes -->
+  <!-- 1 You -->
+  <rect x="30" y="128" width="140" height="80" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="30" y="128" width="140" height="6" rx="5" fill="url(#user)"/>
+  <text x="100" y="168" text-anchor="middle" font-size="28">👤</text>
+  <text x="100" y="193" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">YOU</text>
+  <text x="100" y="206" text-anchor="middle" font-size="10" fill="#8b949e">edit code locally</text>
+
+  <!-- Arrow -->
+  <line x1="172" y1="168" x2="208" y2="168" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="190" y="162" text-anchor="middle" font-size="9" fill="#58a6ff">git push</text>
+
+  <!-- 2 GitLab -->
+  <rect x="210" y="128" width="140" height="80" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="210" y="128" width="140" height="6" rx="5" fill="url(#nyx)"/>
+  <text x="280" y="163" text-anchor="middle" font-size="22">🦊</text>
+  <text x="280" y="185" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">GITLAB</text>
+  <text x="280" y="198" text-anchor="middle" font-size="10" fill="#8b949e">detects push</text>
+  <text x="280" y="208" text-anchor="middle" font-size="10" fill="#8b949e">triggers pipeline</text>
+
+  <!-- Arrow -->
+  <line x1="352" y1="168" x2="388" y2="168" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="370" y="162" text-anchor="middle" font-size="9" fill="#58a6ff">build job</text>
+
+  <!-- 3 Runner/Build -->
+  <rect x="390" y="128" width="140" height="80" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="390" y="128" width="140" height="6" rx="5" fill="url(#nyx)"/>
+  <text x="460" y="163" text-anchor="middle" font-size="22">🐳</text>
+  <text x="460" y="185" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">CI RUNNER</text>
+  <text x="460" y="198" text-anchor="middle" font-size="10" fill="#8b949e">docker build</text>
+  <text x="460" y="208" text-anchor="middle" font-size="10" fill="#8b949e">--platform amd64</text>
+
+  <!-- Arrow -->
+  <line x1="532" y1="168" x2="568" y2="168" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="550" y="162" text-anchor="middle" font-size="9" fill="#58a6ff">push image</text>
+
+  <!-- 4 Registry -->
+  <rect x="570" y="128" width="140" height="80" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="570" y="128" width="140" height="6" rx="5" fill="url(#nyx)"/>
+  <text x="640" y="163" text-anchor="middle" font-size="22">📦</text>
+  <text x="640" y="185" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">REGISTRY</text>
+  <text x="640" y="198" text-anchor="middle" font-size="10" fill="#8b949e">192.168.1.236:5050</text>
+  <text x="640" y="208" text-anchor="middle" font-size="10" fill="#8b949e">stores images</text>
+
+  <!-- Arrow -->
+  <line x1="712" y1="168" x2="748" y2="168" stroke="#3fb950" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="730" y="155" text-anchor="middle" font-size="9" fill="#3fb950">deploy</text>
+  <text x="730" y="165" text-anchor="middle" font-size="9" fill="#3fb950">(auto/manual)</text>
+
+  <!-- 5 Kubernetes -->
+  <rect x="750" y="128" width="140" height="80" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="750" y="128" width="140" height="6" rx="5" fill="url(#selene)"/>
+  <text x="820" y="163" text-anchor="middle" font-size="22">☸️</text>
+  <text x="820" y="185" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">KUBERNETES</text>
+  <text x="820" y="198" text-anchor="middle" font-size="10" fill="#8b949e">Selene · kubectl</text>
+  <text x="820" y="208" text-anchor="middle" font-size="10" fill="#8b949e">set image</text>
+
+  <line x1="60" y1="225" x2="940" y2="225" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2: THREE MACHINES -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="500" y="248" text-anchor="middle" font-size="13" font-weight="600" fill="#8b949e" letter-spacing="2">● THE THREE MACHINES ●</text>
+
+  <!-- NYX -->
+  <rect x="30" y="260" width="290" height="240" rx="12" fill="#0d1117" stroke="#1f6feb" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="30" y="260" width="290" height="36" rx="12" fill="url(#nyx)"/>
+  <rect x="30" y="284" width="290" height="12" fill="url(#nyx)"/>
+  <text x="60" y="284" font-size="14" font-weight="700" fill="#fff">NYX  —  192.168.1.236</text>
+  <text x="60" y="298" font-size="10" fill="#cae8ff">aarch64 · NVIDIA GB10 Blackwell</text>
+
+  <text x="50" y="326" font-size="12" fill="#388bfd">●</text>
+  <text x="65" y="326" font-size="12" fill="#e6edf3" font-weight="600">GitLab CE</text>
+  <text x="65" y="340" font-size="11" fill="#8b949e">  Port 8929 · source code &amp; pipelines</text>
+
+  <text x="50" y="360" font-size="12" fill="#388bfd">●</text>
+  <text x="65" y="360" font-size="12" fill="#e6edf3" font-weight="600">GitLab Runner</text>
+  <text x="65" y="374" font-size="11" fill="#8b949e">  tag: docker-nyx · executes jobs</text>
+
+  <text x="50" y="394" font-size="12" fill="#388bfd">●</text>
+  <text x="65" y="394" font-size="12" fill="#e6edf3" font-weight="600">Container Registry</text>
+  <text x="65" y="408" font-size="11" fill="#8b949e">  Port 5050 · stores Docker images</text>
+
+  <text x="50" y="428" font-size="12" fill="#388bfd">●</text>
+  <text x="65" y="428" font-size="12" fill="#e6edf3" font-weight="600">Docker Engine</text>
+  <text x="65" y="442" font-size="11" fill="#8b949e">  builds linux/amd64 via QEMU</text>
+
+  <text x="50" y="462" font-size="12" fill="#388bfd">●</text>
+  <text x="65" y="462" font-size="12" fill="#e6edf3" font-weight="600">Ollama + Open WebUI + ComfyUI</text>
+  <text x="65" y="476" font-size="11" fill="#8b949e">  AI services (separate from lab)</text>
+
+  <!-- ASTRAEA -->
+  <rect x="355" y="260" width="290" height="240" rx="12" fill="#0d1117" stroke="#f78166" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="355" y="260" width="290" height="36" rx="12" fill="url(#astraea)"/>
+  <rect x="355" y="284" width="290" height="12" fill="url(#astraea)"/>
+  <text x="385" y="284" font-size="14" font-weight="700" fill="#fff">ASTRAEA  —  192.168.1.109</text>
+  <text x="385" y="298" font-size="10" fill="#ffdcd7">x86_64 · Ubuntu · Public Gateway</text>
+
+  <text x="375" y="326" font-size="12" fill="#f78166">●</text>
+  <text x="390" y="326" font-size="12" fill="#e6edf3" font-weight="600">Cloudflare Tunnel</text>
+  <text x="390" y="340" font-size="11" fill="#8b949e">  outbound-only, no open ports</text>
+
+  <text x="375" y="360" font-size="12" fill="#f78166">●</text>
+  <text x="390" y="360" font-size="12" fill="#e6edf3" font-weight="600">Apache HTTP Server</text>
+  <text x="390" y="374" font-size="11" fill="#8b949e">  VirtualHost routing by hostname</text>
+
+  <text x="375" y="394" font-size="12" fill="#f78166">●</text>
+  <text x="390" y="394" font-size="12" fill="#e6edf3" font-weight="600">Proxy Routes</text>
+  <text x="390" y="408" font-size="11" fill="#8b949e">  app.nyxstudios.net → Selene:31055</text>
+  <text x="390" y="421" font-size="11" fill="#8b949e">  invaders.nyxstudios.net → Selene:30618</text>
+  <text x="390" y="434" font-size="11" fill="#8b949e">  gitlab.nyxstudios.net → Nyx:8929</text>
+
+  <text x="375" y="454" font-size="12" fill="#f78166">●</text>
+  <text x="390" y="454" font-size="12" fill="#e6edf3" font-weight="600">Other Services</text>
+  <text x="390" y="468" font-size="11" fill="#8b949e">  Navidrome · Ollama · OpenClaw</text>
+
+  <!-- SELENE -->
+  <rect x="680" y="260" width="290" height="240" rx="12" fill="#0d1117" stroke="#3fb950" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="680" y="260" width="290" height="36" rx="12" fill="url(#selene)"/>
+  <rect x="680" y="284" width="290" height="12" fill="url(#selene)"/>
+  <text x="710" y="284" font-size="14" font-weight="700" fill="#fff">SELENE  —  192.168.1.25</text>
+  <text x="710" y="298" font-size="10" fill="#d2fedb">x86_64 · Ubuntu · K8s Node</text>
+
+  <text x="700" y="326" font-size="12" fill="#3fb950">●</text>
+  <text x="715" y="326" font-size="12" fill="#e6edf3" font-weight="600">Kubernetes (kubeadm)</text>
+  <text x="715" y="340" font-size="11" fill="#8b949e">  single-node control-plane</text>
+
+  <text x="700" y="360" font-size="12" fill="#3fb950">●</text>
+  <text x="715" y="360" font-size="12" fill="#e6edf3" font-weight="600">containerd</text>
+  <text x="715" y="374" font-size="11" fill="#8b949e">  pulls images from Nyx registry</text>
+
+  <text x="700" y="394" font-size="12" fill="#3fb950">●</text>
+  <text x="715" y="394" font-size="12" fill="#e6edf3" font-weight="600">Flannel CNI</text>
+  <text x="715" y="408" font-size="11" fill="#8b949e">  pod networking · 10.244.0.0/16</text>
+
+  <text x="700" y="428" font-size="12" fill="#3fb950">●</text>
+  <text x="715" y="428" font-size="12" fill="#e6edf3" font-weight="600">Running Pods</text>
+  <text x="715" y="442" font-size="11" fill="#8b949e">  demo-app  →  NodePort 31055</text>
+  <text x="715" y="455" font-size="11" fill="#8b949e">  space-invaders  →  NodePort 30618</text>
+
+  <text x="700" y="475" font-size="12" fill="#3fb950">●</text>
+  <text x="715" y="475" font-size="12" fill="#e6edf3" font-weight="600">UFW Firewall</text>
+  <text x="715" y="489" font-size="11" fill="#8b949e">  ports 22, 6443, 10250 open</text>
+
+  <line x1="60" y1="516" x2="940" y2="516" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3: REQUEST PATH -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="500" y="540" text-anchor="middle" font-size="13" font-weight="600" fill="#8b949e" letter-spacing="2">● USER REQUEST PATH ●</text>
+
+  <!-- Request path nodes -->
+  <!-- Browser -->
+  <rect x="30" y="555" width="130" height="70" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+  <text x="95" y="582" text-anchor="middle" font-size="20">🌐</text>
+  <text x="95" y="601" text-anchor="middle" font-size="11" font-weight="600" fill="#e6edf3">BROWSER</text>
+  <text x="95" y="615" text-anchor="middle" font-size="10" fill="#8b949e">HTTPS request</text>
+
+  <line x1="162" y1="590" x2="195" y2="590" stroke="#8b949e" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+  <!-- Cloudflare -->
+  <rect x="197" y="555" width="140" height="70" rx="10" fill="#21262d" stroke="#f6821f" stroke-width="1.5"/>
+  <rect x="197" y="555" width="140" height="5" rx="5" fill="url(#cf)"/>
+  <text x="267" y="581" text-anchor="middle" font-size="20">☁️</text>
+  <text x="267" y="600" text-anchor="middle" font-size="11" font-weight="600" fill="#e6edf3">CLOUDFLARE</text>
+  <text x="267" y="612" text-anchor="middle" font-size="10" fill="#8b949e">DNS + TLS + Access</text>
+  <text x="267" y="622" text-anchor="middle" font-size="10" fill="#f6821f">Google OAuth ✓</text>
+
+  <line x1="339" y1="590" x2="372" y2="590" stroke="#f78166" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+  <!-- Tunnel -->
+  <rect x="374" y="555" width="130" height="70" rx="10" fill="#21262d" stroke="#f78166" stroke-width="1.5"/>
+  <text x="439" y="581" text-anchor="middle" font-size="20">🔒</text>
+  <text x="439" y="600" text-anchor="middle" font-size="11" font-weight="600" fill="#e6edf3">CF TUNNEL</text>
+  <text x="439" y="612" text-anchor="middle" font-size="10" fill="#8b949e">Astraea outbound</text>
+  <text x="439" y="622" text-anchor="middle" font-size="10" fill="#8b949e">no open ports</text>
+
+  <line x1="506" y1="590" x2="539" y2="590" stroke="#f78166" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+  <!-- Apache -->
+  <rect x="541" y="555" width="130" height="70" rx="10" fill="#21262d" stroke="#f78166" stroke-width="1.5"/>
+  <text x="606" y="581" text-anchor="middle" font-size="20">🪶</text>
+  <text x="606" y="600" text-anchor="middle" font-size="11" font-weight="600" fill="#e6edf3">APACHE</text>
+  <text x="606" y="612" text-anchor="middle" font-size="10" fill="#8b949e">Astraea proxy</text>
+  <text x="606" y="622" text-anchor="middle" font-size="10" fill="#8b949e">hostname routing</text>
+
+  <line x1="673" y1="590" x2="706" y2="590" stroke="#3fb950" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- K8s Service -->
+  <rect x="708" y="555" width="130" height="70" rx="10" fill="#21262d" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="773" y="581" text-anchor="middle" font-size="20">☸️</text>
+  <text x="773" y="600" text-anchor="middle" font-size="11" font-weight="600" fill="#e6edf3">K8S POD</text>
+  <text x="773" y="612" text-anchor="middle" font-size="10" fill="#8b949e">Selene NodePort</text>
+  <text x="773" y="622" text-anchor="middle" font-size="10" fill="#56d364">app served ✓</text>
+
+  <!-- Response arrow back (curved) -->
+  <path d="M 838 600 Q 900 648 838 640 Q 660 660 440 650 Q 200 640 160 600"
+        fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.5"/>
+  <text x="500" y="670" text-anchor="middle" font-size="10" fill="#58a6ff" opacity="0.8">← response travels back same path</text>
+
+  <line x1="60" y1="690" x2="940" y2="690" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 4: PIPELINE DETAIL -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="500" y="714" text-anchor="middle" font-size="13" font-weight="600" fill="#8b949e" letter-spacing="2">● CI/CD PIPELINE DETAIL ●</text>
+
+  <!-- Push trigger -->
+  <rect x="30" y="728" width="150" height="56" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+  <text x="105" y="753" text-anchor="middle" font-size="11" font-weight="700" fill="#e6edf3">git push main</text>
+  <text x="105" y="769" text-anchor="middle" font-size="10" fill="#8b949e">developer pushes code</text>
+  <text x="105" y="781" text-anchor="middle" font-size="10" fill="#8b949e">to GitLab repo</text>
+
+  <line x1="182" y1="756" x2="212" y2="756" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Build stage box -->
+  <rect x="214" y="720" width="320" height="100" rx="8" fill="#0d1117" stroke="#388bfd" stroke-width="2"/>
+  <rect x="214" y="720" width="320" height="24" rx="8" fill="#1f3a5e"/>
+  <rect x="214" y="736" width="320" height="8" fill="#1f3a5e"/>
+  <text x="374" y="737" text-anchor="middle" font-size="12" font-weight="700" fill="#79c0ff">STAGE 1: BUILD  (automatic)</text>
+  <text x="234" y="757" font-size="11" fill="#8b949e">1.</text>
+  <text x="248" y="757" font-size="11" fill="#e6edf3">docker login to 192.168.1.236:5050</text>
+  <text x="234" y="772" font-size="11" fill="#8b949e">2.</text>
+  <text x="248" y="772" font-size="11" fill="#e6edf3">Install QEMU binfmt (cross-arch)</text>
+  <text x="234" y="787" font-size="11" fill="#8b949e">3.</text>
+  <text x="248" y="787" font-size="11" fill="#e6edf3">docker build --platform linux/amd64</text>
+  <text x="234" y="802" font-size="11" fill="#8b949e">4.</text>
+  <text x="248" y="802" font-size="11" fill="#e6edf3">docker push :sha + :latest tags</text>
+
+  <line x1="536" y1="756" x2="566" y2="756" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Decision diamond -->
+  <polygon points="600,726 660,756 600,786 540,756" fill="#21262d" stroke="#e3b341" stroke-width="2"/>
+  <text x="600" y="752" text-anchor="middle" font-size="10" fill="#e3b341" font-weight="700">AUTO</text>
+  <text x="600" y="764" text-anchor="middle" font-size="10" fill="#e3b341" font-weight="700">or</text>
+  <text x="600" y="776" text-anchor="middle" font-size="10" fill="#e3b341" font-weight="700">MANUAL?</text>
+
+  <!-- Auto label -->
+  <text x="660" y="740" font-size="10" fill="#3fb950">auto</text>
+  <line x1="660" y1="756" x2="690" y2="756" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Manual label -->
+  <text x="560" y="800" font-size="10" fill="#e3b341" text-anchor="middle">manual ▶ click</text>
+  <line x1="600" y1="786" x2="600" y2="816" stroke="#e3b341" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="600" y1="816" x2="692" y2="816" stroke="#e3b341" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="692" y1="816" x2="692" y2="756" stroke="#e3b341" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Deploy stage box -->
+  <rect x="692" y="720" width="268" height="100" rx="8" fill="#0d1117" stroke="#3fb950" stroke-width="2"/>
+  <rect x="692" y="720" width="268" height="24" rx="8" fill="#1a3a2a"/>
+  <rect x="692" y="736" width="268" height="8" fill="#1a3a2a"/>
+  <text x="826" y="737" text-anchor="middle" font-size="12" font-weight="700" fill="#56d364">STAGE 2: DEPLOY</text>
+  <text x="712" y="757" font-size="11" fill="#8b949e">1.</text>
+  <text x="726" y="757" font-size="11" fill="#e6edf3">Decode KUBE_CONFIG secret</text>
+  <text x="712" y="772" font-size="11" fill="#8b949e">2.</text>
+  <text x="726" y="772" font-size="11" fill="#e6edf3">kubectl set image deployment</text>
+  <text x="712" y="787" font-size="11" fill="#8b949e">3.</text>
+  <text x="726" y="787" font-size="11" fill="#e6edf3">kubectl rollout status</text>
+  <text x="712" y="802" font-size="11" fill="#8b949e">4.</text>
+  <text x="726" y="802" font-size="11" fill="#e6edf3">Pod healthy → pipeline passes</text>
+
+  <line x1="60" y1="838" x2="940" y2="838" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 5: ACCESS REFERENCE -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="500" y="862" text-anchor="middle" font-size="13" font-weight="600" fill="#8b949e" letter-spacing="2">● ACCESS REFERENCE ●</text>
+
+  <!-- Column 1: Public URLs -->
+  <rect x="30" y="874" width="290" height="200" rx="10" fill="#0d1117" stroke="#f6821f" stroke-width="1.5"/>
+  <rect x="30" y="874" width="290" height="30" rx="10" fill="#2d1b00"/>
+  <rect x="30" y="894" width="290" height="10" fill="#2d1b00"/>
+  <text x="175" y="894" text-anchor="middle" font-size="12" font-weight="700" fill="#f6821f">☁️  PUBLIC URLs (Cloudflare)</text>
+  <text x="50" y="920" font-size="11" fill="#e6edf3" font-weight="600">GitLab</text>
+  <text x="50" y="933" font-size="11" fill="#58a6ff">https://gitlab.nyxstudios.net</text>
+  <text x="50" y="950" font-size="11" fill="#e6edf3" font-weight="600">demo-app</text>
+  <text x="50" y="963" font-size="11" fill="#58a6ff">https://app.nyxstudios.net</text>
+  <text x="50" y="980" font-size="11" fill="#e6edf3" font-weight="600">Space Invaders</text>
+  <text x="50" y="993" font-size="11" fill="#58a6ff">https://invaders.nyxstudios.net</text>
+  <text x="50" y="1015" font-size="11" fill="#8b949e">All require Google OAuth</text>
+  <text x="50" y="1028" font-size="11" fill="#8b949e">steve.j.petry@gmail.com</text>
+  <text x="50" y="1045" font-size="11" fill="#8b949e">24-hour session tokens</text>
+  <text x="50" y="1060" font-size="11" fill="#8b949e">No open router ports needed</text>
+
+  <!-- Column 2: GitLab Login -->
+  <rect x="355" y="874" width="290" height="200" rx="10" fill="#0d1117" stroke="#1f6feb" stroke-width="1.5"/>
+  <rect x="355" y="874" width="290" height="30" rx="10" fill="#0d2040"/>
+  <rect x="355" y="894" width="290" height="10" fill="#0d2040"/>
+  <text x="500" y="894" text-anchor="middle" font-size="12" font-weight="700" fill="#79c0ff">🦊  GITLAB LOGIN</text>
+  <text x="375" y="920" font-size="11" fill="#8b949e">URL:</text>
+  <text x="410" y="920" font-size="11" fill="#e6edf3">https://gitlab.nyxstudios.net</text>
+  <text x="375" y="938" font-size="11" fill="#8b949e">User:</text>
+  <text x="410" y="938" font-size="12" fill="#3fb950" font-weight="700">legion</text>
+  <text x="375" y="956" font-size="11" fill="#8b949e">Pass:</text>
+  <text x="410" y="956" font-size="12" fill="#3fb950" font-weight="700">Zaq12345zaq1</text>
+  <text x="375" y="978" font-size="11" fill="#8b949e">Projects:</text>
+  <text x="375" y="992" font-size="11" fill="#e6edf3">  root/demo-app  (auto deploy)</text>
+  <text x="375" y="1006" font-size="11" fill="#e6edf3">  root/space-invaders  (manual)</text>
+  <text x="375" y="1028" font-size="11" fill="#8b949e">Runner tag:  </text>
+  <text x="458" y="1028" font-size="11" fill="#e3b341">docker-nyx</text>
+  <text x="375" y="1043" font-size="11" fill="#8b949e">Registry:    </text>
+  <text x="458" y="1043" font-size="11" fill="#e6edf3">192.168.1.236:5050</text>
+  <text x="375" y="1058" font-size="11" fill="#8b949e">Pipeline CI var: </text>
+  <text x="478" y="1058" font-size="11" fill="#e6edf3">KUBE_CONFIG</text>
+
+  <!-- Column 3: SSH -->
+  <rect x="680" y="874" width="290" height="200" rx="10" fill="#0d1117" stroke="#3fb950" stroke-width="1.5"/>
+  <rect x="680" y="874" width="290" height="30" rx="10" fill="#0d2010"/>
+  <rect x="680" y="894" width="290" height="10" fill="#0d2010"/>
+  <text x="825" y="894" text-anchor="middle" font-size="12" font-weight="700" fill="#56d364">🖥️  SSH &amp; KUBECTL</text>
+  <text x="700" y="918" font-size="11" fill="#8b949e">Selene (K8s):</text>
+  <text x="700" y="931" font-size="11" fill="#79c0ff">ssh legion@192.168.1.25</text>
+  <text x="700" y="944" font-size="11" fill="#8b949e">Astraea (gateway):</text>
+  <text x="700" y="957" font-size="11" fill="#79c0ff">ssh legion@192.168.1.109</text>
+  <text x="700" y="970" font-size="11" fill="#8b949e">Password (all): </text>
+  <text x="800" y="970" font-size="11" fill="#3fb950" font-weight="700">Zaq12345zaq1</text>
+  <text x="700" y="990" font-size="11" fill="#8b949e">Common kubectl cmds:</text>
+  <text x="700" y="1004" font-size="11" fill="#79c0ff">kubectl get pods</text>
+  <text x="700" y="1018" font-size="11" fill="#79c0ff">kubectl get svc</text>
+  <text x="700" y="1032" font-size="11" fill="#79c0ff">kubectl logs -l app=NAME -f</text>
+  <text x="700" y="1046" font-size="11" fill="#79c0ff">kubectl rollout restart deploy/NAME</text>
+  <text x="700" y="1063" font-size="11" fill="#8b949e">LAN app test:</text>
+  <text x="700" y="1077" font-size="11" fill="#79c0ff">curl http://192.168.1.25:PORT/</text>
+
+  <line x1="60" y1="1090" x2="940" y2="1090" stroke="#30363d" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 6: LEGEND / FOOTER -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="500" y="1114" text-anchor="middle" font-size="13" font-weight="600" fill="#8b949e" letter-spacing="2">● HOW TO ADD A NEW APP ●</text>
+
+  <!-- Steps in a horizontal row -->
+  <!-- Step 1 -->
+  <circle cx="70" cy="1158" r="20" fill="#1f3a5e" stroke="#388bfd" stroke-width="2"/>
+  <text x="70" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#79c0ff">1</text>
+  <text x="70" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">GitLab</text>
+  <text x="70" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">Create project</text>
+  <text x="70" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">in web UI</text>
+
+  <line x1="92" y1="1158" x2="128" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 2 -->
+  <circle cx="150" cy="1158" r="20" fill="#1f3a5e" stroke="#388bfd" stroke-width="2"/>
+  <text x="150" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#79c0ff">2</text>
+  <text x="150" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">Add Files</text>
+  <text x="150" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">Dockerfile</text>
+  <text x="150" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">.gitlab-ci.yml</text>
+
+  <line x1="172" y1="1158" x2="208" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 3 -->
+  <circle cx="230" cy="1158" r="20" fill="#1f3a5e" stroke="#388bfd" stroke-width="2"/>
+  <text x="230" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#79c0ff">3</text>
+  <text x="230" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">CI Variable</text>
+  <text x="230" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">Copy KUBE_CONFIG</text>
+  <text x="230" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">to new project</text>
+
+  <line x1="252" y1="1158" x2="288" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 4 -->
+  <circle cx="310" cy="1158" r="20" fill="#1f3a5e" stroke="#388bfd" stroke-width="2"/>
+  <text x="310" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#79c0ff">4</text>
+  <text x="310" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">Enable Runner</text>
+  <text x="310" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">runner_id=1</text>
+  <text x="310" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">via API</text>
+
+  <line x1="332" y1="1158" x2="368" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 5 -->
+  <circle cx="390" cy="1158" r="20" fill="#1a3a2a" stroke="#3fb950" stroke-width="2"/>
+  <text x="390" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#56d364">5</text>
+  <text x="390" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">K8s on Selene</text>
+  <text x="390" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">kubectl create</text>
+  <text x="390" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">deployment + svc</text>
+
+  <line x1="412" y1="1158" x2="448" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 6 -->
+  <circle cx="470" cy="1158" r="20" fill="#2d1b00" stroke="#f6821f" stroke-width="2"/>
+  <text x="470" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#f6821f">6</text>
+  <text x="470" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">Apache</text>
+  <text x="470" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">VirtualHost on</text>
+  <text x="470" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">Astraea</text>
+
+  <line x1="492" y1="1158" x2="528" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 7 -->
+  <circle cx="550" cy="1158" r="20" fill="#2d1b00" stroke="#f6821f" stroke-width="2"/>
+  <text x="550" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#f6821f">7</text>
+  <text x="550" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">CF Tunnel</text>
+  <text x="550" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">Add hostname to</text>
+  <text x="550" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">config.yml</text>
+
+  <line x1="572" y1="1158" x2="608" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 8 -->
+  <circle cx="630" cy="1158" r="20" fill="#2d1b00" stroke="#f6821f" stroke-width="2"/>
+  <text x="630" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#f6821f">8</text>
+  <text x="630" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">DNS Record</text>
+  <text x="630" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">CNAME →</text>
+  <text x="630" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">cfargotunnel.com</text>
+
+  <line x1="652" y1="1158" x2="688" y2="1158" stroke="#30363d" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 9 -->
+  <circle cx="710" cy="1158" r="20" fill="#1a3a2a" stroke="#3fb950" stroke-width="2"/>
+  <text x="710" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#56d364">9</text>
+  <text x="710" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">Push Code</text>
+  <text x="710" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">git push main</text>
+  <text x="710" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">pipeline runs</text>
+
+  <line x1="732" y1="1158" x2="768" y2="1158" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 10 -->
+  <circle cx="790" cy="1158" r="20" fill="#1a3a2a" stroke="#3fb950" stroke-width="2"/>
+  <text x="790" y="1163" text-anchor="middle" font-size="14" font-weight="700" fill="#56d364">10</text>
+  <text x="790" y="1190" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">Deploy</text>
+  <text x="790" y="1202" text-anchor="middle" font-size="10" fill="#8b949e">auto or click ▶</text>
+  <text x="790" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">in pipeline UI</text>
+
+  <line x1="812" y1="1158" x2="848" y2="1158" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+  <!-- Step 11 LIVE -->
+  <circle cx="870" cy="1158" r="22" fill="#1a3a2a" stroke="#56d364" stroke-width="2.5" filter="url(#glow)"/>
+  <text x="870" y="1155" text-anchor="middle" font-size="9" font-weight="700" fill="#56d364">APP</text>
+  <text x="870" y="1166" text-anchor="middle" font-size="9" font-weight="700" fill="#56d364">LIVE</text>
+  <text x="870" y="1178" text-anchor="middle" font-size="9" font-weight="700" fill="#56d364">✓</text>
+  <text x="870" y="1202" text-anchor="middle" font-size="10" fill="#e6edf3" font-weight="600">Live at</text>
+  <text x="870" y="1214" text-anchor="middle" font-size="10" fill="#8b949e">*.nyxstudios</text>
+  <text x="870" y="1226" text-anchor="middle" font-size="10" fill="#8b949e">.net</text>
+
+  <!-- Footer -->
+  <text x="500" y="1298" text-anchor="middle" font-size="11" fill="#484f58">Nyx Studios · K8 AI Lab · github.com/VampyreLegion/k8-ai-lab</text>
+  <text x="500" y="1312" text-anchor="middle" font-size="10" fill="#30363d">GitLab CE · Kubernetes · Cloudflare Tunnel · Apache · containerd · Flannel</text>
+</svg>

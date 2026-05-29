@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Space Invaders</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; display:flex; flex-direction:column;
+       align-items:center; justify-content:center; height:100vh;
+       font-family:'Courier New',monospace; color:#0f0; }
+canvas { border:2px solid #0f0; }
+#ui { display:flex; gap:40px; margin-bottom:8px; font-size:18px; }
+#msg { margin-top:8px; font-size:22px; letter-spacing:2px; min-height:30px; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <span>SCORE: <b id="score">0</b></span>
+  <span>LIVES: <b id="lives">3</b></span>
+  <span>LEVEL: <b id="level">1</b></span>
+  <span>HI: <b id="hi">0</b></span>
+</div>
+<canvas id="c" width="800" height="560"></canvas>
+<div id="msg">PRESS SPACE TO START</div>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+const W=800,H=560;
+const AC=window.AudioContext||window.webkitAudioContext;
+const ac=AC?new AC():null;
+function beep(freq,dur,type='square',vol=0.12){
+  if(!ac)return;
+  const o=ac.createOscillator(),g=ac.createGain();
+  o.connect(g);g.connect(ac.destination);
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+dur);
+  o.start();o.stop(ac.currentTime+dur);
+}
+const shootSfx=()=>beep(880,0.07,'sawtooth');
+const hitSfx=()=>beep(200,0.12,'square');
+const explodeSfx=()=>beep(80,0.3,'sawtooth',0.3);
+const marchSfx=n=>beep([160,130,100,130][n%4],0.05);
+
+let state='idle',score=0,hi=0,lives=3,level=1;
+let player,bullets,eBullets,invaders,shields,particles;
+let marchTick=0,marchStep=0,marchDir=1,marchTimer=800;
+let shotCooldown=0,eShotTimer=0;
+
+const ROWS=5,COLS=11,CW=52,IW=36,IH=24;
+const COLORS=['#f55','#f55','#fa0','#fa0','#0ff'];
+const SHX=[120,260,400,540,680],SHY=435;
+
+const PIX={
+  squid:[[0,0,1,0,0,0,0,0,1,0,0],[0,0,0,1,0,0,0,1,0,0,0],[0,0,1,1,1,1,1,1,1,0,0],[0,1,1,0,1,1,1,0,1,1,0],[1,1,1,1,1,1,1,1,1,1,1],[1,0,1,1,1,1,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[0,0,0,1,1,0,1,1,0,0,0]],
+  crab: [[0,0,1,0,0,0,0,0,1,0,0],[1,0,0,1,0,0,0,1,0,0,1],[1,0,1,1,1,1,1,1,1,0,1],[1,1,1,0,1,1,1,0,1,1,1],[1,1,1,1,1,1,1,1,1,1,1],[0,1,1,1,1,1,1,1,1,1,0],[0,0,1,0,0,0,0,0,1,0,0],[0,1,0,0,0,0,0,0,0,1,0]],
+  octo: [[0,0,0,1,1,1,1,1,0,0,0],[0,1,1,1,1,1,1,1,1,1,0],[1,1,1,1,1,1,1,1,1,1,1],[1,1,1,0,0,1,0,0,1,1,1],[1,1,1,1,1,1,1,1,1,1,1],[0,0,1,1,0,0,0,1,1,0,0],[0,1,0,1,0,0,0,1,0,1,0],[0,0,1,0,0,0,0,0,1,0,0]],
+};
+const TYPE=['squid','crab','crab','octo','octo'];
+
+function drawSprite(spr,x,y,color,s=3){
+  ctx.fillStyle=color;
+  for(let r=0;r<spr.length;r++)
+    for(let c=0;c<spr[r].length;c++)
+      if(spr[r][c]) ctx.fillRect(x+c*s,y+r*s,s,s);
+}
+
+function initLevel(){
+  marchTimer=Math.max(120,700-level*60);
+  player={x:W/2-20,y:H-50,w:40,h:16};
+  bullets=[];eBullets=[];particles=[];
+  invaders=[];
+  for(let r=0;r<ROWS;r++)
+    for(let c=0;c<COLS;c++)
+      invaders.push({r,c,x:70+c*CW,y:70+r*44,alive:true,frame:0,
+        type:TYPE[r],pts:[30,20,20,10,10][r],color:COLORS[r]});
+  shields=[];
+  SHX.forEach(sx=>{
+    for(let ry=0;ry<4;ry++)
+      for(let rx=0;rx<8;rx++){
+        if(ry===3&&rx>=3&&rx<=4) continue;
+        shields.push({x:sx-28+rx*7,y:SHY+ry*7,hp:3});
+      }
+  });
+  marchDir=1;marchTick=0;marchStep=0;shotCooldown=0;eShotTimer=0;
+}
+
+function spawnParts(x,y,color,n=8){
+  for(let i=0;i<n;i++)
+    particles.push({x,y,vx:(Math.random()-0.5)*5,vy:(Math.random()-2)*3,
+                    life:35,color});
+}
+
+const keys={};
+window.addEventListener('keydown',e=>{
+  keys[e.code]=true;e.preventDefault();
+  if(e.code==='Space'&&ac&&ac.state==='suspended') ac.resume();
+  if(e.code==='Space'&&(state==='idle'||state==='gameover'||state==='win')){
+    score=0;lives=3;level=1;state='playing';initLevel();
+    document.getElementById('msg').textContent='';
+  }
+});
+window.addEventListener('keyup',e=>keys[e.code]=false);
+
+function tryShoot(){
+  if(shotCooldown>0||bullets.length>=3)return;
+  bullets.push({x:player.x+19,y:player.y-8});
+  shootSfx();shotCooldown=18;
+}
+
+function hits(ax,ay,aw,ah,bx,by,bw,bh){
+  return ax<bx+bw&&ax+aw>bx&&ay<by+bh&&ay+ah>by;
+}
+
+let last=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  const dt=ts-last;last=ts;
+
+  // draw background
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+
+  if(state==='idle'){
+    ctx.fillStyle='#0f0';ctx.textAlign='center';
+    ctx.font='bold 52px Courier New';ctx.fillText('SPACE INVADERS',W/2,160);
+    ctx.font='22px Courier New';ctx.fillText('← → MOVE   SPACE SHOOT',W/2,250);
+    ctx.fillText('PRESS SPACE TO START',W/2,310);
+    // draw sample invaders
+    drawSprite(PIX.squid,320,370,'#f55');
+    drawSprite(PIX.crab, 440,370,'#fa0');
+    drawSprite(PIX.octo, 560,370,'#0ff');
+    ctx.textAlign='left';
+    return;
+  }
+
+  // ── update ──
+  if(state==='playing'){
+    if(keys['ArrowLeft']||keys['KeyA']) player.x=Math.max(0,player.x-5);
+    if(keys['ArrowRight']||keys['KeyD']) player.x=Math.min(W-player.w,player.x+5);
+    if(keys['Space']||keys['ArrowUp']) tryShoot();
+    if(shotCooldown>0) shotCooldown--;
+
+    const alive=invaders.filter(i=>i.alive);
+
+    // march
+    marchTick+=dt;
+    if(marchTick>=marchTimer){
+      marchTick=0;marchSfx(marchStep++);
+      alive.forEach(i=>i.frame^=1);
+      const minX=Math.min(...alive.map(i=>i.x));
+      const maxX=Math.max(...alive.map(i=>i.x+IW));
+      let drop=false;
+      if(marchDir>0&&maxX>W-10){marchDir=-1;drop=true;}
+      if(marchDir<0&&minX<10){marchDir=1;drop=true;}
+      alive.forEach(i=>{i.x+=drop?0:marchDir*14;i.y+=drop?20:0;});
+      marchTimer=Math.max(60,700-level*60-(invaders.length-alive.length)*7);
+    }
+
+    // enemy shoot
+    eShotTimer+=dt;
+    const eInt=Math.max(350,1600-level*120);
+    if(eShotTimer>eInt){
+      eShotTimer=0;
+      const cols={};
+      alive.forEach(i=>{if(!cols[i.c]||cols[i.c].r<i.r)cols[i.c]=i;});
+      const shooters=Object.values(cols);
+      if(shooters.length){
+        const s=shooters[Math.floor(Math.random()*shooters.length)];
+        eBullets.push({x:s.x+18,y:s.y+IH,speed:3+level*0.35});
+      }
+    }
+
+    // player bullets
+    bullets=bullets.filter(b=>{
+      b.y-=10;
+      if(b.y<0)return false;
+      const br={x:b.x-2,y:b.y,w:4,h:8};
+      for(let i=shields.length-1;i>=0;i--){
+        const s=shields[i];
+        if(hits(br.x,br.y,br.w,br.h,s.x,s.y,7,7)){s.hp--;if(s.hp<=0)shields.splice(i,1);return false;}
+      }
+      for(let inv of alive){
+        if(hits(br.x,br.y,br.w,br.h,inv.x,inv.y,IW,IH)){
+          inv.alive=false;score+=inv.pts;hi=Math.max(hi,score);
+          hitSfx();spawnParts(inv.x+18,inv.y+12,inv.color);
+          document.getElementById('score').textContent=score;
+          document.getElementById('hi').textContent=hi;
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // enemy bullets
+    eBullets=eBullets.filter(b=>{
+      b.y+=b.speed;
+      if(b.y>H)return false;
+      for(let i=shields.length-1;i>=0;i--){
+        const s=shields[i];
+        if(hits(b.x-2,b.y,4,10,s.x,s.y,7,7)){s.hp--;if(s.hp<=0)shields.splice(i,1);return false;}
+      }
+      if(hits(b.x-2,b.y,4,10,player.x,player.y,player.w,player.h)){
+        lives--;explodeSfx();spawnParts(player.x+20,player.y+8,'#0f0',14);
+        document.getElementById('lives').textContent=lives;
+        if(lives<=0){state='gameover';document.getElementById('msg').textContent='GAME OVER — SPACE TO RETRY';}
+        else player.x=W/2-20;
+        return false;
+      }
+      return true;
+    });
+
+    // invaders land
+    if(alive.some(i=>i.y+IH>SHY+50)){
+      state='gameover';explodeSfx();
+      document.getElementById('msg').textContent='THEY LANDED! — SPACE TO RETRY';
+    }
+
+    // cleared
+    if(alive.length===0){
+      level++;document.getElementById('level').textContent=level;
+      state='playing';initLevel();
+    }
+
+    // particles
+    particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.15;return --p.life>0;});
+  }
+
+  // ── draw ──
+  ctx.strokeStyle='#0f0';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,H-20);ctx.lineTo(W,H-20);ctx.stroke();
+
+  shields.forEach(s=>{
+    ctx.fillStyle=['rgba(0,255,0,0.3)','rgba(0,255,0,0.6)','#0f0'][Math.min(s.hp-1,2)];
+    ctx.fillRect(s.x,s.y,7,7);
+  });
+
+  invaders.forEach(inv=>{
+    if(!inv.alive)return;
+    const frames=[PIX.squid,PIX.crab,PIX.crab,PIX.octo,PIX.octo];
+    drawSprite(inv.frame?PIX.crab:frames[inv.r],inv.x,inv.y,inv.color);
+  });
+
+  // player ship
+  ctx.fillStyle='#0f0';
+  ctx.fillRect(player.x+17,player.y-6,6,6);
+  ctx.fillRect(player.x+10,player.y,20,5);
+  ctx.fillRect(player.x,player.y+5,player.w,11);
+
+  // bullets
+  ctx.fillStyle='#ff0';
+  bullets.forEach(b=>ctx.fillRect(b.x-1,b.y,3,8));
+
+  ctx.fillStyle='#f44';
+  eBullets.forEach(b=>{
+    ctx.fillRect(b.x-1,b.y,3,4);
+    ctx.fillRect(b.x-2,b.y+4,5,3);
+    ctx.fillRect(b.x-1,b.y+7,3,3);
+  });
+
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.life/35;
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x,p.y,3,3);
+  });
+  ctx.globalAlpha=1;
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  REGISTRY: "192.168.1.236:5050"
+  IMAGE_TAG: "$REGISTRY/root/demo-app:$CI_COMMIT_SHA"
+  LATEST_TAG: "$REGISTRY/root/demo-app:latest"
+
+build:
+  stage: build
+  tags:
+    - docker-nyx
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY
+    - docker run --rm --privileged tonistiigi/binfmt --install all
+    - docker build --platform linux/amd64 --build-arg BUILD_SHA=$CI_COMMIT_SHA -t $IMAGE_TAG -t $LATEST_TAG .
+    - docker push $IMAGE_TAG
+    - docker push $LATEST_TAG
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  tags:
+    - docker-nyx
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  script:
+    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+    - kubectl set image deployment/demo-app demo-app=$IMAGE_TAG -n default
+    - kubectl rollout status deployment/demo-app -n default --timeout=120s
+  only:
+    - main
