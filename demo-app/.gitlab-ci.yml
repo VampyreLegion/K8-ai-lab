@@ -147,6 +147,17 @@ provision:
         -d "{\"key\":\"K8S_NAMESPACE\",\"value\":\"${K8S_NAMESPACE}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
         -o /dev/null
 
+      curl -s -X POST "${GITLAB_URL}/api/v4/projects/${CI_PROJECT_ID}/variables" \
+        -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"key\":\"APP_SUBDOMAIN\",\"value\":\"${SUBDOMAIN}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
+        -o /dev/null || \
+      curl -s -X PUT "${GITLAB_URL}/api/v4/projects/${CI_PROJECT_ID}/variables/APP_SUBDOMAIN" \
+        -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"key\":\"APP_SUBDOMAIN\",\"value\":\"${SUBDOMAIN}\",\"variable_type\":\"env_var\",\"protected\":false,\"masked\":false}" \
+        -o /dev/null
+
       echo ""
       echo "✔ Infrastructure ready! Namespace: ${K8S_NAMESPACE}"
       echo "✔ https://${HOSTNAME_FQDN}"
@@ -165,7 +176,11 @@ deploy:
     name: bitnami/kubectl:latest
     entrypoint: [""]
   variables:
-    K8S_NAMESPACE: "default"   # overwritten by the project variable saved during provision
+    K8S_NAMESPACE: "default"
+    APP_SUBDOMAIN: "$CI_PROJECT_NAME"
+  environment:
+    name: production
+    url: "https://$APP_SUBDOMAIN.$DOMAIN"
   script:
     - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
     - export KUBECONFIG=/tmp/kubeconfig
